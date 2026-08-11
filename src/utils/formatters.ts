@@ -3,21 +3,24 @@ import { format, formatDistanceToNow, isToday, parseISO } from 'date-fns';
 /**
  * Format a date string for display (e.g., "Aug 7, 2026, 3:05 PM")
  */
-export function formatDate(dateString: string): string {
+export function formatDate(dateString: string | undefined | null): string {
+  if (!dateString) return 'Unknown Date';
   return format(parseISO(dateString), 'MMM d, yyyy, h:mm a');
 }
 
 /**
  * Format a date string as relative time (e.g., "5 minutes ago")
  */
-export function formatRelativeTime(dateString: string): string {
+export function formatRelativeTime(dateString: string | undefined | null): string {
+  if (!dateString) return '';
   return formatDistanceToNow(parseISO(dateString), { addSuffix: true });
 }
 
 /**
  * Check if a date string is from today
  */
-export function isDateToday(dateString: string): boolean {
+export function isDateToday(dateString: string | undefined | null): boolean {
+  if (!dateString) return false;
   return isToday(parseISO(dateString));
 }
 
@@ -49,14 +52,16 @@ export function formatOrderNumber(orderNumber: string): string {
 /**
  * Get file extension from filename
  */
-export function getFileExtension(filename: string): string {
+export function getFileExtension(filename: string | undefined | null): string {
+  if (!filename) return '';
   return filename.slice(filename.lastIndexOf('.')).toLowerCase();
 }
 
 /**
  * Get file type icon name based on extension
  */
-export function getFileTypeIcon(filename: string): string {
+export function getFileTypeIcon(filename: string | undefined | null): string {
+  if (!filename) return 'file';
   const ext = getFileExtension(filename);
   switch (ext) {
     case '.pdf':
@@ -76,7 +81,8 @@ export function getFileTypeIcon(filename: string): string {
 /**
  * Check if file is an image type
  */
-export function isImageFile(filename: string): boolean {
+export function isImageFile(filename: string | undefined | null): boolean {
+  if (!filename) return false;
   const ext = getFileExtension(filename);
   return ['.jpg', '.jpeg', '.png'].includes(ext);
 }
