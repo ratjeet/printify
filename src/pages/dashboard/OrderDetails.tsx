@@ -112,7 +112,7 @@ export default function OrderDetails() {
         <h2 className="text-2xl font-bold text-white mb-2">Order Not Found</h2>
         <p className="text-white/50 mb-6">{error || "The order you're looking for doesn't exist or has been deleted."}</p>
         <button 
-          onClick={() => navigate('/orders')}
+          onClick={() => navigate('/dashboard/orders')}
           className="inline-flex items-center px-4 py-2 bg-white/5 border border-white/10 text-white rounded-xl hover:bg-white/10 transition-colors backdrop-blur-xl"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
@@ -141,7 +141,7 @@ export default function OrderDetails() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center space-x-4">
           <button 
-            onClick={() => navigate('/orders')}
+            onClick={() => navigate('/dashboard/orders')}
             className="p-2 text-white/50 hover:text-white hover:bg-white/10 rounded-xl transition-colors backdrop-blur-sm"
           >
             <ArrowLeft className="w-5 h-5" />
