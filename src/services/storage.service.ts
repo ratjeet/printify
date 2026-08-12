@@ -26,37 +26,30 @@ export async function getStorageStats(): Promise<StorageStats> {
   const maxStorage = 100 * 1024 * 1024; // 100MB default
 
   try {
-    const { data: files, error } = await supabase.storage
-      .from(STORAGE_BUCKETS.DOCUMENTS)
-      .list('', {
-        limit: 1000,
-        offset: 0,
-        sortBy: { column: 'created_at', order: 'desc' },
-      });
+    // Query active orders directly for accurate storage stats
+    const { data: orders, error } = await supabase
+      .from('orders')
+      .select('file_name, file_size, file_path, created_at')
+      .neq('file_path', 'deleted')
+      .order('created_at', { ascending: false });
 
     if (error) {
-      console.error('Error listing storage files:', error);
-      return {
-        totalFiles: 0,
-        totalSize: 0,
-        maxStorage,
-        recentFiles: [],
-      };
+      console.error('Error listing active files from orders:', error);
+      throw error;
     }
 
-    const fileList = (files || []).filter(f => f.name !== '.emptyFolderPlaceholder');
+    const activeOrders = orders || [];
+    const totalSize = activeOrders.reduce((sum, order) => sum + (order.file_size || 0), 0);
 
-    const totalSize = fileList.reduce((sum, file) => sum + (file.metadata?.size || 0), 0);
-
-    const recentFiles: StorageFile[] = fileList.slice(0, 10).map(file => ({
-      name: file.name,
-      size: file.metadata?.size || 0,
-      createdAt: file.created_at || new Date().toISOString(),
-      path: file.name,
+    const recentFiles: StorageFile[] = activeOrders.slice(0, 10).map(order => ({
+      name: order.file_name,
+      size: order.file_size || 0,
+      createdAt: order.created_at,
+      path: order.file_path,
     }));
 
     return {
-      totalFiles: fileList.length,
+      totalFiles: activeOrders.length,
       totalSize,
       maxStorage,
       recentFiles,
