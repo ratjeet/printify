@@ -49,8 +49,9 @@ export function useRealtime(
   }, [onNewOrder, onOrderUpdate, onOrderDelete]);
 
   useEffect(() => {
+    const channelId = `orders-notify-${Date.now()}-${Math.random().toString(36).substring(7)}`;
     const channel = supabase
-      .channel('orders-realtime')
+      .channel(channelId)
       .on(
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'orders' },

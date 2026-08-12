@@ -29,7 +29,7 @@ export function useOrders(initialStatus?: OrderStatus | 'all') {
     fetchOrders();
 
     // Set up real-time subscription
-    const channel = supabase.channel('orders-realtime')
+    const channel = supabase.channel(`orders-fetch-${Date.now()}`)
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'orders' },
