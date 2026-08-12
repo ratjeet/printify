@@ -25,11 +25,46 @@ export default function QRCodePage() {
         await QRCode.toCanvas(canvasRef.current, uploadUrl, {
           width: 320,
           margin: 2,
+          errorCorrectionLevel: 'H',
           color: {
             dark: '#000000',
             light: '#ffffff',
           },
         });
+
+        const canvas = canvasRef.current;
+        const ctx = canvas.getContext('2d');
+        
+        if (ctx) {
+          const size = 64;
+          const x = (canvas.width - size) / 2;
+          const y = (canvas.height - size) / 2;
+
+          // Draw a white circle/square behind the logo to ensure it's readable
+          ctx.fillStyle = '#ffffff';
+          ctx.beginPath();
+          ctx.roundRect(x - 8, y - 8, size + 16, size + 16, 12);
+          ctx.fill();
+
+          const img = new Image();
+          img.crossOrigin = 'Anonymous';
+          img.onload = () => {
+            ctx.drawImage(img, x, y, size, size);
+          };
+          
+          if (settings?.logo_url) {
+            img.src = settings.logo_url;
+          } else {
+            // Fallback to a Printer SVG icon
+            img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(`
+              <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+                <path d="M6 9V3a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v6"/>
+                <rect x="6" y="14" width="12" height="8" rx="1"/>
+              </svg>
+            `);
+          }
+        }
       }
     } catch (err) {
       console.error('Error generating QR code', err);
@@ -52,15 +87,33 @@ export default function QRCodePage() {
 
   const downloadSVG = async () => {
     try {
-      const svg = await QRCode.toString(uploadUrl, {
+      let svg = await QRCode.toString(uploadUrl, {
         type: 'svg',
         width: 320,
         margin: 2,
+        errorCorrectionLevel: 'H',
         color: {
           dark: '#000000',
           light: '#ffffff',
         },
       });
+
+      // Insert logo into SVG
+      const size = 64;
+      const x = (320 - size) / 2;
+      const y = (320 - size) / 2;
+      
+      const logoSvg = settings?.logo_url 
+        ? `<image href="${settings.logo_url}" x="${x}" y="${y}" width="${size}" height="${size}" />`
+        : `<svg x="${x}" y="${y}" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 9V3a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v6"/><rect x="6" y="14" width="12" height="8" rx="1"/></svg>`;
+        
+      const overlay = `
+        <rect x="${x - 8}" y="${y - 8}" width="${size + 16}" height="${size + 16}" rx="12" fill="#ffffff" />
+        ${logoSvg}
+      `;
+      
+      svg = svg.replace('</svg>', `${overlay}</svg>`);
+
       const blob = new Blob([svg], { type: 'image/svg+xml;charset=utf-8' });
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
