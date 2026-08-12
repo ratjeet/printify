@@ -125,6 +125,19 @@ CREATE POLICY "Anyone can create orders"
   TO anon
   WITH CHECK (true);
 
+-- ORDERS: Anon can UPDATE orders (since app uses local auth)
+CREATE POLICY "Anon can update orders"
+  ON orders FOR UPDATE
+  TO anon
+  USING (true)
+  WITH CHECK (true);
+
+-- ORDERS: Anon can DELETE orders (since app uses local auth)
+CREATE POLICY "Anon can delete orders"
+  ON orders FOR DELETE
+  TO anon
+  USING (true);
+
 -- ORDERS: Anyone can read their own order by order_number (for success page)
 CREATE POLICY "Customers read own order"
   ON orders FOR SELECT TO public
@@ -212,6 +225,13 @@ CREATE POLICY "Anyone can upload documents"
   ON storage.objects FOR INSERT
   TO anon
   WITH CHECK (bucket_id = 'documents');
+
+-- Allow anon to delete from documents bucket (since app uses local auth)
+DROP POLICY IF EXISTS "Anon can delete documents" ON storage.objects;
+CREATE POLICY "Anon can delete documents"
+  ON storage.objects FOR DELETE
+  TO anon
+  USING (bucket_id = 'documents');
 
 -- Allow authenticated users full access to documents
 DROP POLICY IF EXISTS "Authenticated full access to documents" ON storage.objects;

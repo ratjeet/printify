@@ -208,11 +208,13 @@ export async function getOrderCountByStatus(status: OrderStatus): Promise<number
  * Get file download URL (signed URL for private bucket)
  */
 export async function getFileDownloadUrl(filePath: string): Promise<string | null> {
+  if (filePath === 'deleted') return null;
+  
   const { data } = supabase.storage
     .from(STORAGE_BUCKETS.DOCUMENTS)
     .getPublicUrl(filePath);
 
-  return data.publicUrl;
+  return data.publicUrl ? `${data.publicUrl}?download=` : null;
 }
 
 /**
