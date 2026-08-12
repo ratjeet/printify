@@ -248,6 +248,13 @@ CREATE POLICY "Anyone can read logos"
   TO anon
   USING (bucket_id = 'logos');
 
+-- Allow anon to list documents (since app uses local auth)
+DROP POLICY IF EXISTS "Anon can list documents" ON storage.objects;
+CREATE POLICY "Anon can list documents"
+  ON storage.objects FOR SELECT
+  TO anon
+  USING (bucket_id = 'documents');
+
 -- Allow authenticated users to manage logos
 DROP POLICY IF EXISTS "Authenticated can manage logos" ON storage.objects;
 CREATE POLICY "Authenticated can manage logos"
